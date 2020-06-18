@@ -1,6 +1,9 @@
+import functools
+
 from django import forms
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.admin.sites import AdminSite
+from django.core.exceptions import PermissionDenied
 
 from .forms import OTPAuthenticationFormMixin
 
@@ -65,3 +68,19 @@ class OTPAdminSite(AdminSite):
         users who have been verified by a registered OTP device.
         """
         return super().has_permission(request) and request.user.is_verified()
+
+
+def attached_admin_view(func):
+    """
+    Decorator for attached admin views, requires the user to have a view or
+    change permission.
+    """
+    @functools.wraps(func)
+    def wrapper(self, request, *args, **kwargs):
+        # Older Django versions do not define has_view_or_change_permission().
+        has_permission = getattr(self, 'has_view_or_change_permission', self.has_change_permission)
+        if not has_permission(request):
+            raise PermissionDenied
+        return func(self, request, *args, **kwargs)
+
+    return wrapper

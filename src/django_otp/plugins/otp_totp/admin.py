@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import TOTPDevice
+from django_otp.admin import attached_admin_view
 
 
 class TOTPDeviceAdmin(admin.ModelAdmin):
@@ -69,6 +70,7 @@ class TOTPDeviceAdmin(admin.ModelAdmin):
 
         return urls
 
+    @attached_admin_view
     def config_view(self, request, pk):
         device = TOTPDevice.objects.get(pk=pk)
 
@@ -82,6 +84,7 @@ class TOTPDeviceAdmin(admin.ModelAdmin):
 
         return TemplateResponse(request, 'otp_totp/admin/config.html', context)
 
+    @attached_admin_view
     def qrcode_view(self, request, pk):
         device = TOTPDevice.objects.get(pk=pk)
 
